@@ -1,0 +1,41 @@
+﻿@model Web.Models.Film
+<br/>
+@Html.Partial("InfoMessage")
+@using (Html.BeginForm("Delete", "Film", FormMethod.Post, new { @enctype = "multipart/form-data", @aria_disabled = true }))
+{
+    @Html.AntiForgeryToken()
+    <fieldset disabled>
+        @Html.AntiForgeryToken()
+        <div class="form-group">
+            @Html.DisplayNameFor(t => t.Name)
+            @Html.TextBoxFor(t => t.Name, new { @class = "form-control" })
+            @Html.ValidationMessageFor(t => t.Name)
+        </div>
+        <div class="form-group">
+            @Html.DisplayNameFor(t => t.Description)
+            @Html.TextBoxFor(t => t.Description, new { @class = "form-control" })
+            @Html.ValidationMessageFor(t => t.Description)
+        </div>
+        <div class="form-group">
+            @Html.DisplayNameFor(t => t.ImagePath)
+            @Html.TextBoxFor(t => t.ImagePath, new { @class = "form-control", @type = "file" })
+            @Html.ValidationMessageFor(t => t.ImagePath)
+        </div>
+        <div class="form-group">
+            @Html.DisplayNameFor(t => t.FilmDirector)
+            @Html.TextBoxFor(t => t.FilmDirector, new { @class = "form-control" })
+            @Html.ValidationMessageFor(t => t.FilmDirector)
+        </div>
+        <div class="form-group">
+            @Html.DisplayNameFor(t => t.Year)
+            @Html.TextBoxFor(t => t.Year, new { @class = "form-control" })
+            @Html.ValidationMessageFor(t => t.Year)
+        </div>
+        <div class="form-group">
+            @Html.DisplayName("Author")
+            <input type="text" class="form-control" disabled="disabled" value="@User.Identity.Name">
+        </div>
+    </fieldset>
+    <input type="submit" class="btn btn-danger" />
+}
+

@@ -1,0 +1,35 @@
+﻿@using Microsoft.AspNet.Identity
+@using PagedList.Mvc;
+@using PagedList;
+<br />
+@Html.Partial("InfoMessage")
+<div class="row">
+    <div class="col-md-12">
+        @Html.ActionLink("Add Film", "Create", null, new { @class = "btn btn-primary" })
+    </div>
+</div>
+<br />
+<div class="row">
+    @foreach (var film in ViewBag.FilmsList)
+    {
+        <div class="col-md-4">
+            <div class="thumbnail">
+                <img width="100%" src="~/Images/@film.ImagePath" />
+                <div class="caption">
+                    <h3>@film.Name</h3>
+                    <p>@film.Description</p>
+                    <p>@film.FilmDirector</p>
+                    <p>@film.Year г.</p>
+                    @if (film.AuthorId == User.Identity.GetUserId())
+                    {
+                        <p>
+                            @Html.ActionLink("Edit", "Edit", "Film", new { @id = film.IdGuid }, new { @class = "btn btn-info" })
+                            @Html.ActionLink("Delete", "Delete", "Film", new { @id = film.IdGuid }, new { @class = "btn btn-info" })
+                        </p>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+</div>
+@Html.PagedListPager((IPagedList)ViewBag.FilmsList, page => Url.Action("Index", new { page }), PagedListRenderOptions.TwitterBootstrapPagerAligned)
