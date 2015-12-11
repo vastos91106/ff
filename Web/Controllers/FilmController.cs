@@ -73,7 +73,7 @@ namespace Web.Controllers
                     return View(entity);
                 }
 
-                TempData["infoMessage"] = "Only  the author can remove/delete";
+                TempData["infoMessage"] = "Only the author can edit";
 
                 return RedirectToAction("Index");
             }
@@ -104,7 +104,7 @@ namespace Web.Controllers
                 }
                 catch (Exception exception)
                 {
-                    TempData["infoMessage"] = $"Произошла ошибка: {exception.Message}";
+                    TempData["infoMessage"] = $"An error has occurred: {exception.Message}";
                     return View(model);
                 }
             }
@@ -123,7 +123,7 @@ namespace Web.Controllers
                 }
 
                 if (entity.AuthorId == User.Identity.GetUserId()) return View(entity);
-                TempData["infoMessage"] = "Only  the author can remove/delete";
+                TempData["infoMessage"] = "Only  the author can delete";
                 return RedirectToAction("Index");
             }
             catch (Exception exception)
