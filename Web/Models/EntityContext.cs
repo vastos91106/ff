@@ -9,7 +9,8 @@ namespace Web.Models
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<Film>().HasKey(t => t.IdGuid);
+            modelBuilder.Entity<Film>().HasKey(t => t.Id);
+            modelBuilder.Entity<Film>().Ignore(t => t.File);
             modelBuilder.Entity<ApplicationUser>().HasKey(t => t.Id);
             modelBuilder.Entity<IdentityUserLogin>().HasKey<string>(l => l.UserId);
             modelBuilder.Entity<Film>().Property(t => t.AuthorId).IsRequired();

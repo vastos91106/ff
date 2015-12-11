@@ -1,8 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Web;
 using System.Web.Mvc;
 
 using Microsoft.AspNet.Identity;
@@ -14,15 +11,13 @@ namespace Web.Controllers
     [Authorize]
     public class FilmController : Controller
     {
-        private readonly ApplicationDbContext _dbContext = new ApplicationDbContext();
+        private readonly IUnitOfWork _unitOfWork = new UnitOfWork();
 
         [HttpGet]
         [AllowAnonymous]
         public ActionResult Index(int? page)
         {
-            var model = _dbContext.Set<Film>().ToArray();
-            ViewBag.FilmsList = model.ToPagedList(page ?? 1, 3);
-
+            ViewBag.FilmsList = _unitOfWork.GetEntitys<Film>().ToPagedList(page ?? 1, 3);
             return View();
         }
 
@@ -44,22 +39,18 @@ namespace Web.Controllers
                 {
                     SaveImage(ref model);
 
-                    model.IdGuid = Guid.NewGuid();
                     model.AuthorId = User.Identity.GetUserId();
-                    model.ImagePath = Request.Files[0].FileName;
 
-                    _dbContext.Set<Film>().Add(model);
-                    _dbContext.SaveChanges();
+                    if (!_unitOfWork.SaveEntity(model)) throw new Exception("Error save entity");
 
                     TempData["infoMessage"] = "Film added";
                     return RedirectToAction("Index");
                 }
                 catch (Exception exception)
                 {
-                    TempData["infoMessage"] = $"Произошла ошибка: {exception}";
+                    TempData["infoMessage"] = $"An error has occurred: {exception}";
                     return View(model);
                 }
-
             }
             return View(model);
         }
@@ -69,15 +60,26 @@ namespace Web.Controllers
         {
             try
             {
-                var entity = _dbContext.Set<Film>().Find(id);
+                var entity = _unitOfWork.GetEntity<Film>(id);
 
-                if (entity.AuthorId == User.Identity.GetUserId()) return View(entity);
+                if (entity == null)
+                {
+                    throw new Exception("Film not exist");
+                }
+
+                if (entity.AuthorId == User.Identity.GetUserId())
+                {
+                    Film.ExistedFile = entity.ImagePath;
+                    return View(entity);
+                }
+
                 TempData["infoMessage"] = "Only  the author can remove/delete";
+
                 return RedirectToAction("Index");
             }
-            catch (Exception)
+            catch (Exception exception)
             {
-                TempData["infoMessage"] = "Film not exist";
+                TempData["infoMessage"] = $"An error has occurred: {exception.Message}";
                 return RedirectToAction("Index");
             }
         }
@@ -95,21 +97,17 @@ namespace Web.Controllers
                     SaveImage(ref model);
 
                     model.AuthorId = User.Identity.GetUserId();
-
-                    _dbContext.Set<Film>().Attach(model);
-                    _dbContext.Entry(model).State = System.Data.Entity.EntityState.Modified;
-                    _dbContext.SaveChanges();
+                    if (!_unitOfWork.SaveEntity(model)) throw new Exception("Error save entity");
 
                     TempData["infoMessage"] = "Film update";
                     return RedirectToAction("Index");
                 }
                 catch (Exception exception)
                 {
-                    TempData["infoMessage"] = $"Произошла ошибка: {exception}";
+                    TempData["infoMessage"] = $"Произошла ошибка: {exception.Message}";
                     return View(model);
                 }
             }
-
             return View(model);
         }
 
@@ -117,15 +115,20 @@ namespace Web.Controllers
         {
             try
             {
-                var entity = _dbContext.Set<Film>().Find(id);
+                var entity = _unitOfWork.GetEntity<Film>(id);
+
+                if (entity == null)
+                {
+                    throw new Exception("Film not exist");
+                }
 
                 if (entity.AuthorId == User.Identity.GetUserId()) return View(entity);
                 TempData["infoMessage"] = "Only  the author can remove/delete";
                 return RedirectToAction("Index");
             }
-            catch (Exception)
+            catch (Exception exception)
             {
-                TempData["infoMessage"] = "Film not exist";
+                TempData["infoMessage"] = $"An error has occurred: {exception.Message}";
                 return RedirectToAction("Index");
             }
         }
@@ -136,41 +139,45 @@ namespace Web.Controllers
         {
             try
             {
-                _dbContext.Entry(model).State = System.Data.Entity.EntityState.Deleted;
-                _dbContext.Set<Film>().Remove(model);
-                _dbContext.SaveChanges();
-
+                if (!_unitOfWork.DeleteEntity<Film>(model.Id)) throw new Exception("Error save entity");
                 TempData["infoMessage"] = "Film delete";
                 return RedirectToAction("Index");
             }
             catch (Exception exception)
             {
-                TempData["infoMessage"] = $"Произошла ошибка: {exception}";
+                TempData["infoMessage"] = $"An error has occurred: {exception.Message}";
                 return View(model);
             }
         }
 
         private void ValidateImage(ref Film model)
         {
-            if (string.IsNullOrEmpty(model.ImagePath) && !string.IsNullOrEmpty(Request.Form.Get("existImage")))
+            if (string.IsNullOrEmpty(Film.ExistedFile))
+                Film.ExistedFile = model.File?.FileName;
+
+            model.ImagePath = Film.ExistedFile;
+
+            if (!string.IsNullOrEmpty(model.ImagePath))
             {
-                model.ImagePath = Request.Form.Get("existImage");
                 ModelState.Remove("ImagePath");
-            }
-            else
-            {
-                model.ImagePath = Request.Files[0].FileName;
             }
         }
 
         private void SaveImage(ref Film model)
         {
-            if (!string.IsNullOrEmpty(Request.Files[0].FileName))
+            model.File = model.File ?? Request.Files[0];
+
+            if (!string.IsNullOrEmpty(model.File?.FileName))
             {
                 var path = AppDomain.CurrentDomain.BaseDirectory + "images/";
-                Request.Files[0].SaveAs(Path.Combine(path, Path.GetFileName(Request.Files[0].FileName)));
+                if (!Directory.Exists(path))
+                {
+                    Directory.CreateDirectory(path);
+                }
 
-                model.ImagePath = Request.Files[0].FileName;
+                model.File.SaveAs(Path.Combine(path, Path.GetFileName(model.File.FileName)));
+
+                model.ImagePath = model.File.FileName;
             }
         }
     }

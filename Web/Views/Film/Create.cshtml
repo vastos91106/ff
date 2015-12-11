@@ -1,8 +1,9 @@
 ﻿@model Web.Models.Film
 <br />
 @Html.Partial("InfoMessage")
-@using (Html.BeginForm("Create", "Film", FormMethod.Post, new { @enctype = "multipart/form-data" }))
+@using (Html.BeginForm("Create", "Film", FormMethod.Post, new { enctype = "multipart/form-data" }))
 {
+    @TempData["CurentImage"]
     @Html.AntiForgeryToken()
     <div class="form-group">
         @Html.DisplayNameFor(t => t.Name)
@@ -18,8 +19,8 @@
         @Html.DisplayNameFor(t => t.ImagePath)
         <br />
         <div class="btn btn-success">
-            @Html.TextBoxFor(t => t.ImagePath, new { @class = "fileExistInModel", @type = "file", @value = Model.ImagePath })
-            @Html.Hidden("existImage", Model.ImagePath)
+            @Html.TextBoxFor(t => t.File, new { @class = "fileExistInModel", @type = "file", @value = Model.ImagePath  })
+            @Html.HiddenFor(t => t.ImagePath)
             <span id="fileLabel">
                 @Model.ImagePath
             </span>

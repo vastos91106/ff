@@ -4,7 +4,7 @@
 @using (Html.BeginForm("Edit", "Film", FormMethod.Post, new { enctype = "multipart/form-data" }))
 {
     @Html.AntiForgeryToken()
-    @Html.HiddenFor(t=>t.IdGuid)
+    @Html.HiddenFor(t=>t.Id)
     <div class="form-group">
         @Html.DisplayNameFor(t => t.Name)
         @Html.TextBoxFor(t => t.Name, new { @class = "form-control" })

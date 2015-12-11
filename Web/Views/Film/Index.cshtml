@@ -23,8 +23,8 @@
                     @if (film.AuthorId == User.Identity.GetUserId())
                     {
                         <p>
-                            @Html.ActionLink("Edit", "Edit", "Film", new { @id = film.IdGuid }, new { @class = "btn btn-info" })
-                            @Html.ActionLink("Delete", "Delete", "Film", new { @id = film.IdGuid }, new { @class = "btn btn-info" })
+                            @Html.ActionLink("Edit", "Edit", "Film", new { @id = film.Id }, new { @class = "btn btn-info" })
+                            @Html.ActionLink("Delete", "Delete", "Film", new { @id = film.Id }, new { @class = "btn btn-info" })
                         </p>
                     }
                 </div>
